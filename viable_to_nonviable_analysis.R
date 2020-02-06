@@ -62,11 +62,16 @@ results <- results %>%
   pivot_longer(cols = c("align1", "alignfinal"), names_to = "round", values_to = "result")
 
 results %>% 
-  write_csv("cleaned_nyt_results.csv")
+  write_csv(paste0("cleaned_nyt_results", Sys.time() ,".csv"))
 
 results %>% 
   filter(weird) %>% 
   select(precinct, County, candidate, round, result, viable1, viablefinal, viability_threshold, votes_align1) %>%
+  print(n = Inf)
+
+results %>% 
+  filter(precinct == "ORGM") %>% 
+  select(precinct, County, candidate, round, result, viable1, viablefinal,precinct_delegates, viability_threshold, votes_align1) %>%
   print(n = Inf)
 
 # cases where viable round 1 candidates see their vote totals go DOWN for the final count
@@ -124,8 +129,7 @@ g <- results %>%
   ggplot(aes(x = round, y = result, group = candidate, fill = candidate)) +
   geom_bar(stat = "identity", aes(color = weird)) +
   facet_wrap(~ precinct_full, scales = "free_y") +
-  scale_fill_discrete() +
-  #scale_fill_viridis_d() +
+  scale_fill_brewer(palette = "Accent") +
   scale_color_manual(values = c(NA, "red")) +
   MCMsBasics::minimal_ggplot_theme()
 
