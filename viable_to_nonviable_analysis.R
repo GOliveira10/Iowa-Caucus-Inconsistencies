@@ -69,6 +69,21 @@ results %>%
   select(precinct, County, candidate, round, result, viable1, viablefinal, viability_threshold, votes_align1) %>%
   print(n = Inf)
 
+# cases where viable round 1 candidates see their vote totals go DOWN for the final count
+results %>% 
+  pivot_wider(names_from = round, values_from = result) %>% 
+  filter(alignfinal < align1, alignfinal > 0) %>% 
+  select(precinct, County, candidate, align1, alignfinal, viable1, viablefinal, viability_threshold, ) %>%
+  print(n = Inf)
+
+# same as above, but these are cases where the total votes cast is the SAME in each round
+results %>% 
+  pivot_wider(names_from = round, values_from = result) %>% 
+  filter(alignfinal < align1, alignfinal > 0, votes_align1 == votes_alignfinal) %>% 
+  select(precinct, County, candidate, align1, alignfinal, viable1, viablefinal, viability_threshold, ) %>%
+  filter(viable1) %>% 
+  print(n = Inf)
+
 viablegroups <- results %>% 
   filter(viable1) %>% 
   group_by(precinct_full) %>% 
@@ -144,18 +159,3 @@ g <- results %>%
   MCMsBasics::minimal_ggplot_theme()
 
 ggsave(plot = g, filename = "~/iowa_2020_results_viablenon_toomanygroups_precinct.jpg", width = 8, height = 8)
-
-
-#### Trying the official iowa caucus data ####
-
-url <- 'https://results.thecaucuses.org/'
-
-url %>% 
-  read_html() %>% 
-  html_nodes(".precinct-table") %>% 
-  
-
-iowa_data <- url %>% 
-  read_html() %>% 
-  html_nodes(xpath = '//*[contains(concat( " ", @class, " " ), concat( " ", "wrap", " " ))] | //li') %>%
-  html_text()
