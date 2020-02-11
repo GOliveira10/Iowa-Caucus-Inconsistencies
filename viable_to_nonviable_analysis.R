@@ -74,6 +74,21 @@ results %>%
   select(precinct, County, candidate, round, result, viable1, viablefinal,precinct_delegates, viability_threshold, votes_align1) %>%
   print(n = Inf)
 
+results %>% 
+  filter(precinct == "WDM-312") %>% 
+  select(precinct, County, candidate, round, result, viable1, viablefinal,precinct_delegates, viability_threshold, votes_align1) %>%
+  print(n = Inf)
+
+results %>% 
+  filter(precinct == "WDM-312") %>% 
+  group_by(round) %>% 
+  summarise(total_votes = sum(result))
+
+results %>% 
+  filter(precinct == "DO") %>% 
+  group_by(round) %>% 
+  summarise(total_votes = sum(result))
+
 # cases where viable round 1 candidates see their vote totals go DOWN for the final count
 results %>% 
   pivot_wider(names_from = round, values_from = result) %>% 
@@ -96,12 +111,15 @@ viablegroups <- results %>%
 
 results <- left_join(results, viablegroups)
 
-# find precincts where the weird results happened, ignoring cases of uncommitted (because this category isn't subject to the viability thresholds)
+# find precincts where the weird results happened, ignoring cases of uncommitted
 
 viable_non_precincts <- results %>% 
   filter(weird, candidate != "uncommitted") %>% 
   .$precinct_full
 viable_non_precincts
+
+# set a nice color palette 
+palette <- tmaptools::get_brewer_pal("Accent", n = 14)
 
 # now plot the data as a paired stacked barchart, and outline all the weird occurrences in red
 g <- results %>% 
@@ -109,7 +127,7 @@ g <- results %>%
   ggplot(aes(x = round, y = result, group = candidate, fill = candidate)) +
   geom_bar(stat = "identity", aes(color = weird)) +
   facet_wrap(~ precinct_full, scales = "free_y") +
-  scale_fill_viridis_d() +
+  scale_fill_manual(values = palette) +
   scale_color_manual(values = c(NA, "red")) +
   MCMsBasics::minimal_ggplot_theme()
 
@@ -124,12 +142,13 @@ viable_non_precincts <- results %>%
   .$precinct_full
 
 # now plot the data as a paired stacked barchart, and outline all the weird occurrences in red
+
 g <- results %>% 
   filter(precinct_full %in% viable_non_precincts) %>% 
   ggplot(aes(x = round, y = result, group = candidate, fill = candidate)) +
   geom_bar(stat = "identity", aes(color = weird)) +
-  facet_wrap(~ precinct_full, scales = "free_y") +
-  scale_fill_brewer(palette = "Accent") +
+  facet_wrap(paste(precinct_delegates, "prec. del.") ~ paste(County, precinct), scales = "free_y") +
+  scale_fill_manual(values = palette) +
   scale_color_manual(values = c(NA, "red")) +
   MCMsBasics::minimal_ggplot_theme()
 
@@ -137,7 +156,7 @@ ggsave(plot = g, filename = "~/iowa_2020_results_viablenon_uncon_precinct.jpg", 
 
 
 
-
+# now the cases where the number of viable candidates exceeds the number of delegates, in which case the smallest viable group has to disperse
 viable_non_precincts <- results %>% 
   filter(weird, num_viable1_cand > precinct_delegates) %>% 
   .$precinct_full
@@ -156,9 +175,8 @@ g <- results %>%
   filter(precinct_full %in% viable_non_precincts) %>% 
   ggplot(aes(x = round, y = result, group = candidate, fill = candidate)) +
   geom_bar(stat = "identity", aes(color = weird)) +
-  facet_wrap(~ precinct_full, scales = "free_y") +
-  scale_fill_discrete() +
-  #scale_fill_viridis_d() +
+  facet_wrap(paste(precinct_delegates, "prec. del.") ~ precinct_full, scales = "free_y") +
+  scale_fill_manual(values = palette) +
   scale_color_manual(values = c(NA, "red")) +
   MCMsBasics::minimal_ggplot_theme()
 
