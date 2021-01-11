@@ -73,9 +73,7 @@
 Iowa Weirdness
 --------------
 
-I posted a thread on Twitter
-(<a href="https://twitter.com/SethYefrican/status/1224982241740091392?s=20" class="uri">https://twitter.com/SethYefrican/status/1224982241740091392?s=20</a>)
-highlighting some strange data discrepancies between the precinct level
+I noticed some strange data discrepancies between the precinct level
 vote counts in the first and final alignment of the Iowa Caucus. These
 are:
 
